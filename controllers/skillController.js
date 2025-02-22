@@ -1,15 +1,25 @@
 const pool = require("../db");
 
 // get all skills
-const getSkills = async (req, res) => {
+const getAllUserSkills = async (req, res) => {
     try {
-        const skills = await pool.query("select * from skills");
-        res.status(200).json(skills.rows);
+        const result = await pool.query(`SELECT  
+    users.id AS user_id, 
+    users.name AS user_name, 
+    skills.id AS skill_id, 
+    skills.description as description,
+    skills.name AS skill_name, 
+    skills.created_at AS created_at
+FROM skills
+JOIN users ON skills.user_id = users.id;
+`);
+
+        res.json(result.rows);
     } catch (error) {
-        console.log(error.message);
-        res.status(500).send("Server error");
+        console.error("Error fetching user skills:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
 
 // get skill by id
 const getSkillsById = async (req, res) => {
@@ -76,4 +86,4 @@ const deleteSkill = async (req, res) => {
     }
 }
 
-module.exports = { getSkills, getSkillsById, addSkill, updateSkill, deleteSkill };
+module.exports = { getAllUserSkills, getSkillsById, addSkill, updateSkill, deleteSkill };

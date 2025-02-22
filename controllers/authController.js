@@ -10,7 +10,17 @@ const register = async (req, res) => {
             "INSERT INTO users (id, name, email, password) VALUES (gen_random_uuid(), $1, $2, $3) RETURNING *",
             [name, email, hashedPassword]
         );
-        res.json(newUser.rows[0]);
+        const user = newUser.rows[0];
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -26,7 +36,13 @@ const login = async (req, res) => {
         if (!validPassword) return res.status(401).json({ error: "Invalid credentials" });
 
         const token = jwt.sign({ userId: user.rows[0].id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-        res.json({ token });
+        res.json({
+            token, user: {
+                id: user.rows[0].id,
+                name: user.rows[0].name,
+                email: user.rows[0].email
+            }
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -42,41 +42,48 @@ const getUserById = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, bio } = req.body; // Email olinmaydi
+        const { name, bio } = req.body;
 
-        // Yangi qiymatlar faqat berilgan maydonlarni yangilash uchun
+        // Parametrlar ro'yxati
         const updates = [];
         const values = [];
-        let query = "UPDATE users SET";
-
+        
         if (name) {
-            updates.push(" name = $1");
+            updates.push(`name = $${values.length + 1}`);
             values.push(name);
         }
         if (bio) {
-            updates.push(" bio = $" + (values.length + 1));
+            updates.push(`bio = $${values.length + 1}`);
             values.push(bio);
         }
 
+        // Agar yangilanishga hech narsa bo'lmasa, xatolik qaytaramiz
         if (updates.length === 0) {
             return res.status(400).json({ error: "No fields to update" });
         }
 
-        query += updates.join(",") + " WHERE id = $" + (values.length + 1) + " RETURNING *";
+        // ID ni parametrlarga qo'shamiz
         values.push(id);
+        
+        // UPDATE so‘rovini tuzamiz
+        const query = `UPDATE users SET ${updates.join(", ")} WHERE id = $${values.length} RETURNING *`;
 
+        // So‘rovni bajarish
         const result = await pool.query(query, values);
 
-        if (result.rows.length === 0) {
+        // Agar foydalanuvchi topilmasa
+        if (result.rowCount === 0) {
             return res.status(404).json({ error: "User not found" });
         }
 
+        // Yangilangan foydalanuvchini qaytaramiz
         res.json(result.rows[0]);
     } catch (error) {
-        console.error(error.message);
+        console.error("Update User Error:", error.message);
         res.status(500).json({ error: "Server error" });
     }
 };
+
 
 
 module.exports = { getUsers, getUserById , updateUser};

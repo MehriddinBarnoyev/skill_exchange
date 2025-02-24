@@ -25,7 +25,9 @@ JOIN users ON skills.user_id = users.id;
 const getSkillsById = async (req, res) => {
     try {
         const { id } = req.params;
-        const skills = await pool.query("select * from skills where id = $1", [id])
+        const skills = await pool.query("select * from skills where id = $1 ", [id])
+        console.log(skills.rows);
+
         res.status(200).json(skills.rows[0]);
     } catch (error) {
         console.log(error.message);
@@ -34,21 +36,68 @@ const getSkillsById = async (req, res) => {
     }
 }
 
-// add skill
+const getUserSkills = async (req, res) => {
+    try {
+        console.log("Params:", req.params);
+        let { userId } = req.params;
+
+        userId = userId.trim(); // 🔥 "\n" yoki bo‘sh joylarni olib tashlaymiz
+
+        if (!userId) {
+            console.log("❌ User ID yo‘q!");
+            return res.status(400).json({ error: "User ID is required" });
+        }
+        console.log("Id :", userId);
+
+
+        console.log("🔍 Query boshlanyapti...");
+        const result = await pool.query(
+            "SELECT * FROM skills WHERE user_id = $1",
+            [userId]
+        );
+
+        console.log("✅ Query natijasi:", result.rows);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "No skills found for this user" });
+        }
+
+        res.status(200).json({ success: true, skills: result.rows });
+    } catch (error) {
+        console.error("❌ ERROR:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
+
+
+
 const addSkill = async (req, res) => {
     try {
-        const { user_id, name, description } = req.body;
+        const { userId } = req.params; // user_id params orqali olinadi
+        const { name, description } = req.body;
+        console.log(name, description, userId);
 
+
+        // 🔥 1. INPUT VALIDATION
+        if (!userId || !name || !description) {
+            return res.status(400).json({ error: "All fields are required (userId, name, description)" });
+        }
+
+        // 🔥 3. INSERT INTO DATABASE
         const result = await pool.query(
             "INSERT INTO skills (id, user_id, name, description) VALUES (gen_random_uuid(), $1, $2, $3) RETURNING *",
-            [user_id, name, description]
-        ); res.status(200).json(result.rows[0]);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).send("Server error");
+            [userId.trim(), name, description]
+        );
 
+        res.status(201).json({ success: true, skill: result.rows[0] });
+    } catch (error) {
+        console.error("❌ ERROR:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
+
 
 // update skill
 const updateSkill = async (req, res) => {
@@ -86,4 +135,4 @@ const deleteSkill = async (req, res) => {
     }
 }
 
-module.exports = { getAllUserSkills, getSkillsById, addSkill, updateSkill, deleteSkill };
+module.exports = { getAllUserSkills, getSkillsById, addSkill, updateSkill, deleteSkill, getUserSkills };

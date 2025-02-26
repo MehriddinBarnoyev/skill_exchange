@@ -1,7 +1,7 @@
 const pool = require("../db");
 
 // get all skills
-const getAllUserSkills = async (req, res) => {
+const getAllSkills = async (req, res) => {
     try {
         const result = await pool.query(`SELECT  
     users.id AS user_id, 
@@ -91,6 +91,8 @@ const addSkill = async (req, res) => {
             [userId.trim(), name, description]
         );
 
+        
+        
         res.status(201).json({ success: true, skill: result.rows[0] });
     } catch (error) {
         console.error("❌ ERROR:", error.message);
@@ -135,4 +137,4 @@ const deleteSkill = async (req, res) => {
     }
 }
 
-module.exports = { getAllUserSkills, getSkillsById, addSkill, updateSkill, deleteSkill, getUserSkills };
+module.exports = { getAllSkills, getSkillsById, addSkill, updateSkill, deleteSkill, getUserSkills };

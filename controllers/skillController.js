@@ -59,7 +59,7 @@ const getUserSkills = async (req, res) => {
         console.log("✅ Query natijasi:", result.rows);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: "No skills found for this user" });
+            return res.status(201).json({ success: false, message: "Skills not found" });
         }
 
         res.status(200).json({ success: true, skills: result.rows });
@@ -68,9 +68,6 @@ const getUserSkills = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
-
 
 
 const addSkill = async (req, res) => {
@@ -107,7 +104,7 @@ const updateSkill = async (req, res) => {
         const { id } = req.params;
         const { name, description } = req.body;
 
-        const result = await pool.query("update skills set name = $1, description = $2 where id = *3 returning *", [name, description, id]);
+        const result = await pool.query("update skills set name = $1, description = $2 where id = $3 returning *", [name, description, id]);
 
         if (result.rows.length === 0) {
             return res.status(404).send("Skill not found");

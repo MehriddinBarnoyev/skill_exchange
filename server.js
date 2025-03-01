@@ -8,6 +8,9 @@ const skillRoutes = require("./routes/skillRoutes.js");
 const matchRoutes = require("./routes/matchRoutes.js");
 const reviewRoutes = require("./routes/reviewRoutes.js");
 const messageRoutes = require("./routes/messageRoutes.js")
+const userProfilesRoutes = require("./routes/userProfileRoutes.js")
+const requestRoutes = require("./routes/requestRoutes");
+
 
 
 const app = express();
@@ -23,6 +26,9 @@ app.use("/api/skills", skillRoutes);
 app.use("/api/matches", matchRoutes)
 app.use("/api/reviews", reviewRoutes)
 app.use("/api/messages", messageRoutes)
+app.use("/api/userProfiles", userProfilesRoutes)
+app.use("/api/connections", requestRoutes)
+
 
 
 

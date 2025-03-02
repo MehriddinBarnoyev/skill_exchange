@@ -38,7 +38,6 @@ const getSkillsById = async (req, res) => {
 
 const getUserSkills = async (req, res) => {
     try {
-        console.log("Params:", req.params);
         let { userId } = req.params;
 
         userId = userId.trim(); // 🔥 "\n" yoki bo‘sh joylarni olib tashlaymiz
@@ -50,13 +49,11 @@ const getUserSkills = async (req, res) => {
         console.log("Id :", userId);
 
 
-        console.log("🔍 Query boshlanyapti...");
         const result = await pool.query(
             "SELECT * FROM skills WHERE user_id = $1",
             [userId]
         );
 
-        console.log("✅ Query natijasi:", result.rows);
 
         if (result.rows.length === 0) {
             return res.status(201).json({ success: false, message: "Skills not found" });

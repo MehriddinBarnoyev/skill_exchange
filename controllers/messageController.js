@@ -1,5 +1,4 @@
 const pool = require('../db');
-const { login } = require('./authController');
 
 const sendMessage = async (req, res) => {
     try {

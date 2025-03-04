@@ -3,8 +3,7 @@ const pool = require("../db");
 const sendConnectionRequest = async (req, res) => {
     try {
         const { sender_id, receiver_id } = req.body;
-        console.log(sender_id, receiver_id);
-        
+
 
         if (sender_id === receiver_id) {
             return res.status(400).json({ message: "O'zingizga connect so‘rov yuborolmaysiz!" });
@@ -59,10 +58,24 @@ const getConnectionRequests = async (req, res) => {
     try {
         const { user_id } = req.params;
 
+
         const requests = await pool.query(
-            "SELECT * FROM connections WHERE receiver_id = $1 AND status = 'pending'",
-            [user_id]
+            `SELECT 
+    c.id,
+    c.sender_id,
+    sender.name AS sender_name,
+    c.receiver_id,
+    receiver.name AS receiver_name,
+    c.status
+FROM connections c
+JOIN users sender ON c.sender_id = sender.id
+JOIN users receiver ON c.receiver_id = receiver.id
+WHERE c.receiver_id ='${user_id}' AND c.status = 'pending';
+`
+
         );
+
+
 
         res.json(requests.rows);
     } catch (error) {
@@ -71,5 +84,45 @@ const getConnectionRequests = async (req, res) => {
     }
 };
 
+const getFriends = async (req, res) => {
+    try {
 
-module.exports = { sendConnectionRequest, getConnectionRequests, respondToConnectionRequest };
+        const { user_id } = req.params;
+
+        const response = await pool.query(`SELECT 
+    c.id,
+    CASE 
+        WHEN c.sender_id = $1 THEN receiver.id
+        ELSE sender.id
+    END AS connected_user_id,
+
+    CASE 
+        WHEN c.sender_id = $1 THEN receiver.name
+        ELSE sender.name
+    END AS connected_user_name,
+
+    CASE 
+        WHEN c.sender_id = $1 THEN receiver.profile_picture
+        ELSE sender.profile_picture
+    END AS connected_user_profile_picture,
+
+    CASE 
+        WHEN c.sender_id = $1 THEN receiver.profession
+        ELSE sender.profession
+    END AS connected_user_profession
+
+FROM connections c
+JOIN users sender ON c.sender_id = sender.id
+JOIN users receiver ON c.receiver_id = receiver.id
+WHERE (c.sender_id = $1 OR c.receiver_id = $1) AND c.status = 'accepted';
+`, [user_id]);
+
+        res.json(response.rows);
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send("Server error");
+
+    }
+}
+
+module.exports = { sendConnectionRequest, getConnectionRequests, respondToConnectionRequest, getFriends };

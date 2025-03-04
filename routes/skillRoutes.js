@@ -10,11 +10,11 @@ const {
 
 const router = express.Router();
 
-router.get("/", getAllSkills);         // Barcha userlarning skillari
-router.get("/user/:userId", getUserSkills); // Foydalanuvchi bo‘yicha skill
-router.get("/:id", getSkillsById);         // Bitta skillni ID bo‘yicha olish
-router.post("/addskill/:userId", addSkill);                // Skill qo‘shish
-router.put("/:id", updateSkill);           // Skillni yangilash
-router.delete("/:id", deleteSkill);        // Skillni o‘chirish
+router.get("/", getAllSkills);
+router.get("/user/:userId", getUserSkills);
+router.get("/:id", getSkillsById);
+router.post("/addskill/:userId", addSkill);
+router.put("/:id", updateSkill);
+router.delete("/:id", deleteSkill);
 
 module.exports = router;

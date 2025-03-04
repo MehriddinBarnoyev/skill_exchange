@@ -9,7 +9,8 @@ const getAllSkills = async (req, res) => {
     skills.id AS skill_id, 
     skills.description as description,
     skills.name AS skill_name, 
-    skills.created_at AS created_at
+    skills.created_at AS created_at,
+    skills.level as level
 FROM skills
 JOIN users ON skills.user_id = users.id;
 `);
@@ -59,6 +60,9 @@ const getUserSkills = async (req, res) => {
             return res.status(201).json({ success: false, message: "Skills not found" });
         }
 
+        
+        
+
         res.status(200).json({ success: true, skills: result.rows });
     } catch (error) {
         console.error("❌ ERROR:", error.message);
@@ -66,12 +70,11 @@ const getUserSkills = async (req, res) => {
     }
 };
 
-
 const addSkill = async (req, res) => {
     try {
         const { userId } = req.params; // user_id params orqali olinadi
-        const { name, description } = req.body;
-        console.log(name, description, userId);
+        const { name, description, level } = req.body;
+        console.log(name, description, level, userId);
 
 
         // 🔥 1. INPUT VALIDATION
@@ -81,8 +84,8 @@ const addSkill = async (req, res) => {
 
         // 🔥 3. INSERT INTO DATABASE
         const result = await pool.query(
-            "INSERT INTO skills (id, user_id, name, description) VALUES (gen_random_uuid(), $1, $2, $3) RETURNING *",
-            [userId.trim(), name, description]
+            "INSERT INTO skills (id, user_id, name, description, level) VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING *",
+            [userId.trim(), name, description, level]
         );
 
         
@@ -93,7 +96,6 @@ const addSkill = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
 
 // update skill
 const updateSkill = async (req, res) => {

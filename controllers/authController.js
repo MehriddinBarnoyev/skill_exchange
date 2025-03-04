@@ -3,10 +3,46 @@ const jwt = require("jsonwebtoken");
 const pool = require("../db");
 const mailService = require("../service/mail.service");
 
+
+const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp, user_id } = req.body;
+
+        // `user_id` yo'q bo'lsa, email orqali bazadan topamiz
+        let userId = user_id;
+
+        if (!userId) {
+            const userResult = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
+            if (userResult.rows.length === 0) {
+                return res.status(404).json({ error: "User not found" });
+            }
+            userId = userResult.rows[0].id;
+        }
+
+        // OTPni tekshiramiz
+        const isOtpValid = await mailService.verifyOtp(email, otp, userId);
+        if (!isOtpValid) {
+            return res.status(401).json({ error: "Invalid or expired OTP" });
+        }
+
+        // Token yaratamiz
+        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+        return res.status(200).json({
+            message: "OTP verified",
+            token,
+            user_id: userId
+        });
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
+
 const register = async (req, res) => {
     try {
         const { email, password, name, otp } = req.body;
-
 
         // 1. User allaqachon mavjudligini tekshiramiz
         const userExists = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
@@ -17,9 +53,10 @@ const register = async (req, res) => {
 
         // 2. Agar OTP kiritilmagan bo‘lsa, foydalanuvchini vaqtincha bazaga yozamiz
         if (!otp) {
+            const hashedPassword = await bcrypt.hash(password, 10);
             const tempUser = await pool.query(
                 "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id",
-                [name, email, password]
+                [name, email, hashedPassword]
             );
 
             const userId = tempUser.rows[0].id;
@@ -96,39 +133,6 @@ const login = async (req, res) => {
 };
 
 
-const verifyOtp = async (req, res) => {
-    try {
-        const { email, otp, user_id } = req.body;
 
-        // `user_id` yo'q bo'lsa, email orqali bazadan topamiz
-        let userId = user_id;
-
-        if (!userId) {
-            const userResult = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
-            if (userResult.rows.length === 0) {
-                return res.status(404).json({ error: "User not found" });
-            }
-            userId = userResult.rows[0].id;
-        }
-
-        // OTPni tekshiramiz
-        const isOtpValid = await mailService.verifyOtp(email, otp, userId);
-        if (!isOtpValid) {
-            return res.status(401).json({ error: "Invalid or expired OTP" });
-        }
-
-        // Token yaratamiz
-        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-        return res.status(200).json({
-            message: "OTP verified",
-            token,
-            user_id: userId
-        });
-
-    } catch (err) {
-        return res.status(500).json({ error: err.message });
-    }
-};
 
 module.exports = { register, login, verifyOtp };

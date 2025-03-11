@@ -28,6 +28,7 @@ app.use("/api/reviews", reviewRoutes)
 app.use("/api/messages", messageRoutes)
 app.use("/api/userProfiles", userProfilesRoutes)
 app.use("/api/connections", requestRoutes)
+app.use('/uploads', express.static('uploads'));
 
 
 

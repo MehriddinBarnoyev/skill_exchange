@@ -60,10 +60,10 @@ const getUserSkills = async (req, res) => {
             return res.status(201).json({ success: false, message: "Skills not found" });
         }
 
-        
-        
 
-        res.status(200).json({ success: true, skills: result.rows });
+
+
+        res.status(200).json(result.rows);
     } catch (error) {
         console.error("❌ ERROR:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -88,8 +88,8 @@ const addSkill = async (req, res) => {
             [userId.trim(), name, description, level]
         );
 
-        
-        
+
+
         res.status(201).json({ success: true, skill: result.rows[0] });
     } catch (error) {
         console.error("❌ ERROR:", error.message);

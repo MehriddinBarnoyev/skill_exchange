@@ -102,9 +102,9 @@ const getFriends = async (req, res) => {
     END AS connected_user_name,
 
     CASE 
-        WHEN c.sender_id = $1 THEN receiver.profile_picture
-        ELSE sender.profile_picture
-    END AS connected_user_profile_picture,
+        WHEN c.sender_id = $1 THEN receiver.profile_pic
+        ELSE sender.profile_pic
+    END AS connected_user_profile_pic,
 
     CASE 
         WHEN c.sender_id = $1 THEN receiver.profession
@@ -125,4 +125,19 @@ WHERE (c.sender_id = $1 OR c.receiver_id = $1) AND c.status = 'accepted';
     }
 }
 
-module.exports = { sendConnectionRequest, getConnectionRequests, respondToConnectionRequest, getFriends };
+const deleteFriend = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const { friend_id } = req.body;
+
+        const response = await pool.query(`DELETE FROM connections WHERE (sender_id = $1 AND receiver_id = $2)`, [user_id, friend_id]);
+
+        res.json({ success: true, message: "Friend o‘chirildi" });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send("Server error");
+
+    }
+}
+
+module.exports = { sendConnectionRequest, getConnectionRequests, respondToConnectionRequest, getFriends , deleteFriend};

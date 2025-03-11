@@ -1,4 +1,27 @@
 const pool = require("../db");
+const multer = require("multer");
+const path = require("path");
+
+// Configure multer storage
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploads/"); // Save images in the uploads folder
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    }
+});
+
+// File filter (only allow images)
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only image files are allowed!"), false);
+    }
+};
+
+exports.upload = multer({ storage, fileFilter })
 
 const getUsers = async (req, res) => {
     try {
@@ -15,7 +38,7 @@ const completeProfile = async (req, res) => {
         const { id } = req.params;
         const updates = [];
         const values = [];
-    
+
         const fields = {
             location: req.body.location,
             profession: req.body.profession,
@@ -24,7 +47,7 @@ const completeProfile = async (req, res) => {
             birth_date: req.body.birth_date,
             interests: req.body.interests
         };
-    
+
         // Faqat qiymati bor maydonlarni qo'shamiz
         Object.keys(fields).forEach((key, index) => {
             if (fields[key] !== undefined) {
@@ -32,23 +55,23 @@ const completeProfile = async (req, res) => {
                 values.push(fields[key]);
             }
         });
-    
+
         if (updates.length === 0) {
             return res.status(400).json({ error: "No fields to update" });
         }
-    
+
         values.push(id); // User ID ni so‘rovga qo‘shamiz
-    
+
         const query = `UPDATE users SET ${updates.join(", ")}, is_profile_complete = TRUE WHERE id = $${values.length}`;
-    
+
         await pool.query(query, values);
-    
+
         res.status(200).json({ message: "Profile updated successfully" });
     } catch (error) {
         console.log(error.message);
         res.status(500).send("Server Error");
     }
-    
+
 }
 
 const getUserById = async (req, res) => {
@@ -121,4 +144,4 @@ const updateUser = async (req, res) => {
 };
 
 
-module.exports = { getUsers, getUserById, updateUser , completeProfile};
+module.exports = { getUsers, getUserById, updateUser, completeProfile };

@@ -6,7 +6,7 @@ const getUserProfile = async (req, res) => {
         const { id } = req.params;
         
         const userQuery = await pool.query(
-            "SELECT id, name, bio, profile_picture, created_at , location FROM users WHERE id = $1",
+            "SELECT id, name, bio, profile_pic, created_at , location FROM users WHERE id = $1",
             [id]
         );
 

@@ -10,6 +10,7 @@ const reviewRoutes = require("./routes/reviewRoutes.js");
 const messageRoutes = require("./routes/messageRoutes.js")
 const userProfilesRoutes = require("./routes/userProfileRoutes.js")
 const requestRoutes = require("./routes/requestRoutes");
+const path = require("path");
 
 
 
@@ -30,6 +31,8 @@ app.use("/api/userProfiles", userProfilesRoutes)
 app.use("/api/connections", requestRoutes)
 app.use('/uploads', express.static('uploads'));
 
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 

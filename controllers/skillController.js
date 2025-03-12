@@ -47,7 +47,6 @@ const getUserSkills = async (req, res) => {
             console.log("❌ User ID yo‘q!");
             return res.status(400).json({ error: "User ID is required" });
         }
-        console.log("Id :", userId);
 
 
         const result = await pool.query(

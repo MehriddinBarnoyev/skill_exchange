@@ -28,7 +28,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Initialize multer middleware
-const upload = multer({ storage, fileFilter });
+const upload = multer({ storage, fileFilter }).single("profile_image");
 
 const getUsers = async (req, res) => {
     try {

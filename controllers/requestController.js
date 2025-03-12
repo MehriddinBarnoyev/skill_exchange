@@ -130,7 +130,7 @@ const deleteFriend = async (req, res) => {
         const { user_id } = req.params;
         const { friend_id } = req.body;
 
-        const response = await pool.query(`DELETE FROM connections WHERE (sender_id = $1 AND receiver_id = $2)`, [user_id, friend_id]);
+        const response = await pool.query(`DELETE FROM connections WHERE (sender_id = $1 AND receiver_id = $2) or sender_id = $2 and receiver_id = $1`, [user_id, friend_id]);
 
         res.json({ success: true, message: "Friend o‘chirildi" });
     } catch (error) {
@@ -140,4 +140,4 @@ const deleteFriend = async (req, res) => {
     }
 }
 
-module.exports = { sendConnectionRequest, getConnectionRequests, respondToConnectionRequest, getFriends , deleteFriend};
+module.exports = { sendConnectionRequest, getConnectionRequests, respondToConnectionRequest, getFriends, deleteFriend };

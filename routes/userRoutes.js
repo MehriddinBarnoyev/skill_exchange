@@ -8,7 +8,7 @@ router.get("/", getUsers);
 router.get("/:id", authenticateToken, getUserById);
 router.put("/:id", authenticateToken, updateUser);
 router.post("/complete-profile/:id", authenticateToken, completeProfile);
-router.post("/upload-profile-image/:id", authenticateToken, upload.single("profile_pic"), updateProfileImage);
+router.post("/upload-profile-image/:id", upload, updateProfileImage);
 
 
 module.exports = router;

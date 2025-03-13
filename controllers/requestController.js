@@ -35,6 +35,8 @@ const sendConnectionRequest = async (req, res) => {
 const respondToConnectionRequest = async (req, res) => {
     try {
         const { request_id, action } = req.body;
+        console.log(request_id, action);
+
 
         if (!['accepted', 'rejected'].includes(action)) {
             return res.status(400).json({ message: "Noto‘g‘ri action!" });
@@ -64,13 +66,18 @@ const getConnectionRequests = async (req, res) => {
     c.id,
     c.sender_id,
     sender.name AS sender_name,
+    sender.profile_pic AS sender_profile_pic,
     c.receiver_id,
     receiver.name AS receiver_name,
-    c.status
+    receiver.profile_pic AS receiver_profile_pic, 
+    c.status,
+    c.created_at 
 FROM connections c
 JOIN users sender ON c.sender_id = sender.id
 JOIN users receiver ON c.receiver_id = receiver.id
-WHERE c.receiver_id ='${user_id}' AND c.status = 'pending';
+WHERE c.receiver_id = '${user_id}' AND c.status = 'pending';
+
+
 `
 
         );
@@ -130,14 +137,23 @@ const deleteFriend = async (req, res) => {
         const { user_id } = req.params;
         const { friend_id } = req.body;
 
-        const response = await pool.query(`DELETE FROM connections WHERE (sender_id = $1 AND receiver_id = $2) or sender_id = $2 and receiver_id = $1`, [user_id, friend_id]);
+        const response = await pool.query(
+            `DELETE FROM connections 
+             WHERE (sender_id = $1 AND receiver_id = $2) 
+             OR (sender_id = $2 AND receiver_id = $1)`,
+            [user_id, friend_id]
+        );
 
-        res.json({ success: true, message: "Friend o‘chirildi" });
+        if (response.rowCount === 0) {
+            return res.status(404).json({ success: false, message: "Connection not found" });
+        }
+
+        res.json({ success: true, message: "Friend deleted successfully" });
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
         res.status(500).send("Server error");
-
     }
-}
+};
+
 
 module.exports = { sendConnectionRequest, getConnectionRequests, respondToConnectionRequest, getFriends, deleteFriend };

@@ -6,6 +6,7 @@ const getAllSkills = async (req, res) => {
         const result = await pool.query(`SELECT  
     users.id AS user_id, 
     users.name AS user_name, 
+    users.profile_pic AS profile_pic,
     skills.id AS skill_id, 
     skills.description as description,
     skills.name AS skill_name, 

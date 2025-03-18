@@ -118,10 +118,10 @@ const getFriends = async (req, res) => {
         ELSE sender.profession
     END AS connected_user_profession
 
-FROM connections c
-JOIN users sender ON c.sender_id = sender.id
-JOIN users receiver ON c.receiver_id = receiver.id
-WHERE (c.sender_id = $1 OR c.receiver_id = $1) AND c.status = 'accepted';
+    FROM connections c
+    JOIN users sender ON c.sender_id = sender.id
+    JOIN users receiver ON c.receiver_id = receiver.id
+    WHERE (c.sender_id = $1 OR c.receiver_id = $1) AND c.status = 'accepted';
 `, [user_id]);
 
         res.json(response.rows);

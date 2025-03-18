@@ -16,34 +16,39 @@ const sendMessage = async (req, res) => {
 const getMessage = async (req, res) => {
     try {
         const { id } = req.params;
-        const { reciever_id } = req.body;
+        const { receiver_id } = req.body;
 
-        const message = await pool.query(`SELECT 
+        const message = await pool.query(`
+            SELECT 
                 m.id,
                 m.content,
                 m.created_at,
                 sender.id AS sender_id,
-                sender.name AS sender_name,
-                sender.profile_pic AS sender_profile_pic,
-                receiver.id AS receiver_id,
-                receiver.name AS receiver_name,
-                receiver.profile_pic AS receiver_profile_pic
-                FROM messages m
-                JOIN users sender ON m.sender_id = sender.id
-                JOIN users receiver ON m.receiver_id = receiver.id
-                WHERE m.sender_id = $1 OR m.receiver_id = $2
-                ORDER BY m.created_at DESC;`, [id, reciever_id]);
+                receiver.id AS receiver_id
+            FROM messages m
+            JOIN users sender ON m.sender_id = sender.id
+            JOIN users receiver ON m.receiver_id = receiver.id
+            WHERE (m.sender_id = $1 AND m.receiver_id = $2) 
+               OR (m.sender_id = $2 AND m.receiver_id = $1)
+            ORDER BY m.created_at DESC;
+        `, [id, receiver_id]);
+
+        console.log("User: ", id, "Friend", receiver_id);
+        console.log(message.rows);
+
+
 
         if (message.rows.length === 0) {
-            return res.status(404).send("Message not found");
+            return res.status(200).send("No messages found between these users.");
         }
+
         res.json(message.rows);
     } catch (error) {
         console.log(error.message);
         res.status(500).send('Server Error');
-
     }
 }
+
 
 const getConversation = async (req, res) => {
     try {

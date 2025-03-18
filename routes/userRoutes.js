@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/", getUsers);
 router.get("/:id", authenticateToken, getUserById);
-router.put("/:id", authenticateToken, updateUser);
+router.post("/:id", authenticateToken, updateUser);
 router.post("/complete-profile/:id", authenticateToken, completeProfile);
 router.post("/upload-profile-image/:id", upload, updateProfileImage);
 

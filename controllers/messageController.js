@@ -15,8 +15,10 @@ const sendMessage = async (req, res) => {
 
 const getMessage = async (req, res) => {
     try {
+
         const { id } = req.params;
         const { receiver_id } = req.body;
+
 
         const message = await pool.query(`
             SELECT 
@@ -30,11 +32,10 @@ const getMessage = async (req, res) => {
             JOIN users receiver ON m.receiver_id = receiver.id
             WHERE (m.sender_id = $1 AND m.receiver_id = $2) 
                OR (m.sender_id = $2 AND m.receiver_id = $1)
-            ORDER BY m.created_at DESC;
+            ORDER BY m.created_at ASC;
         `, [id, receiver_id]);
 
-        console.log("User: ", id, "Friend", receiver_id);
-        console.log(message.rows);
+
 
 
 

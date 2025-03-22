@@ -26,7 +26,7 @@ const verifyOtp = async (req, res) => {
         }
 
         // Token yaratamiz
-        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
 
         return res.status(200).json({
             message: "OTP verified",
@@ -86,7 +86,7 @@ const register = async (req, res) => {
         await pool.query("UPDATE users SET password = $1 WHERE id = $2", [hashedPassword, userId]);
 
         // 5. Token yaratamiz
-        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
 
         res.status(201).json({ message: "Registration successful", token, user_id: userId });
 
@@ -123,7 +123,7 @@ const login = async (req, res) => {
         }
 
         // 4. Token yaratamiz
-        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
 
         res.status(200).json({ message: "Login successful", token, user_id: userId });
 

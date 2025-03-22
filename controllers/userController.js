@@ -94,29 +94,31 @@ const getUserById = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, bio } = req.body;
+        const { name, bio, email, birth_date } = req.body;
         const updates = [];
         const values = [];
 
         if (name) {
+            if (typeof name !== "string" || name.trim() === "") {
+                return res.status(400).json({ errors: { name: "Name must be a non-empty string" } });
+            }
             updates.push(`name = $${values.length + 1}`);
             values.push(name);
         }
         if (bio) {
+            if (typeof bio !== "string" || bio.length > 500) {
+                return res.status(400).json({ errors: { bio: "Bio must be less than 500 characters" } });
+            }
             updates.push(`bio = $${values.length + 1}`);
             values.push(bio);
         }
-
-        if (!updates.length) {
-            return res.status(400).json({ error: "No fields to update" });
+        if (email) {
+            updates.push(`email = $${values.length + 1}`);
+            values.push(email);
         }
-
-        values.push(id);
-        const query = `UPDATE users SET ${updates.join(", ")} WHERE id = $${values.length} RETURNING *`;
-        const result = await pool.query(query, values);
-
-        if (!result.rowCount) {
-            return res.status(404).json({ error: "User not found" });
+        if (birth_date) {
+            updates.push(`birth_date = $${values.length + 1}`);
+            values.push(birth_date);
         }
 
         res.json(result.rows[0]);
@@ -133,7 +135,7 @@ const updateProfileImage = async (req, res) => {
             return res.status(400).json({ error: "No image uploaded" });
         }
 
-        const imagePath = `/uploads/${req.file.filename}`; // Store relative path
+        const imagePath = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
 
         // Update database with new image path
         await pool.query("UPDATE users SET profile_pic= $1 WHERE id = $2", [imagePath, id]);

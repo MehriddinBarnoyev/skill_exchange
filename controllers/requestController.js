@@ -35,7 +35,6 @@ const sendConnectionRequest = async (req, res) => {
 const respondToConnectionRequest = async (req, res) => {
     try {
         const { request_id, action } = req.body;
-        console.log(request_id, action);
 
 
         if (!['accepted', 'rejected'].includes(action)) {

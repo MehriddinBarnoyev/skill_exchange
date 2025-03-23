@@ -15,33 +15,33 @@ const sendMessage = async (req, res) => {
 
 const getMessage = async (req, res) => {
     try {
-
         const { id } = req.params;
         const { receiver_id } = req.body;
-
 
         const message = await pool.query(`
             SELECT 
                 m.id,
                 m.content,
                 m.created_at,
+                m.isRead,  -- isRead qo‘shildi
                 sender.id AS sender_id,
-                receiver.id AS receiver_id
+                sender.name AS sender_name,
+                sender.profile_pic AS sender_profile_pic,
+                receiver.id AS receiver_id,
+                receiver.name AS receiver_name,
+                receiver.profile_pic AS receiver_profile_pic
             FROM messages m
             JOIN users sender ON m.sender_id = sender.id
             JOIN users receiver ON m.receiver_id = receiver.id
             WHERE (m.sender_id = $1 AND m.receiver_id = $2) 
                OR (m.sender_id = $2 AND m.receiver_id = $1)
-            ORDER BY m.created_at ASC;
+            ORDER BY m.created_at DESC;
         `, [id, receiver_id]);
 
-
-
-
-
         if (message.rows.length === 0) {
-            return res.status(200).send("No messages found between these users.");
+            return res.status(404).send("No messages found between these users.");
         }
+        
 
         res.json(message.rows);
     } catch (error) {
@@ -49,6 +49,24 @@ const getMessage = async (req, res) => {
         res.status(500).send('Server Error');
     }
 }
+
+const markMessagesAsRead = async (req, res) => {
+    try {
+        const { sender_id } = req.body; // Kimdan kelgan xabarlarni o‘qiganini belgilash
+        const receiver_id = req.params; // Auth'd foydalanuvchi (chatni o‘qigan odam)
+
+        await pool.query(`
+            UPDATE messages 
+            SET isRead = TRUE 
+            WHERE receiver_id = $1 AND sender_id = $2 AND isRead = FALSE;
+        `, [receiver_id, sender_id]);
+
+        res.json({ success: true, message: "Messages marked as read" });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send("Server error");
+    }
+};
 
 
 const getConversation = async (req, res) => {
@@ -83,4 +101,4 @@ const deleteMessage = async (req, res) => {
     }
 };
 
-module.exports = { sendMessage, getMessage, getConversation, deleteMessage };
+module.exports = { sendMessage, getMessage, getConversation, deleteMessage, markMessagesAsRead };
